@@ -7,6 +7,7 @@ module.exports = {
     ...defaultConfig.content,
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}", // Updated line
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -57,5 +58,5 @@ module.exports = {
       },
     },
   },
-  plugins: [...defaultConfig.plugins, require("tailwindcss-animate")],
+  plugins: [...defaultConfig.plugins, require("tailwindcss-animate")], // Plugins are not updated in the new code, so we keep the existing ones
 }
