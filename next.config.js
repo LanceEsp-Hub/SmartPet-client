@@ -1,24 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  images: {
-    domains: [
-      "smart-pet-backend-production.up.railway.app",
-      "localhost",
-      "example.com",
-      "placekitten.com",
-      "images.unsplash.com",
-      "source.unsplash.com",
-      "res.cloudinary.com",
-    ],
-    unoptimized: true,
-  },
   eslint: {
-    // Warning: This allows production builds to successfully complete even with ESLint errors
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  images: {
+    domains: ["localhost", "smart-pet-backend-production.up.railway.app"],
+    unoptimized: true,
   },
 }
 
