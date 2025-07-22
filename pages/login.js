@@ -1,177 +1,171 @@
-"use client";
+// Login page
+"use client"
 
-import { useState, useEffect, lazy, Suspense } from "react";
-import Head from "next/head";
-import { loginUser, registerUser } from "../utils/api";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import toast from "react-hot-toast";
-import CryptoJS from "crypto-js";
+import { useState, useEffect, lazy, Suspense } from "react"
+import Head from "next/head"
+import { loginUser, registerUser, sendPasswordResetEmail } from "../utils/api"
+import Link from "next/link"
+import { useRouter } from "next/router"
+import toast from "react-hot-toast"
+import CryptoJS from "crypto-js"
 
 // Lazy load the ForgotPassword component
-const ForgotPassword = lazy(() => import("./forgot-password"));
+const ForgotPassword = lazy(() => import("./forgot-password"))
 
-const SECRET_KEY = "asdasdasd";
+const SECRET_KEY = "asdasdasd"
 
 const encryptData = (data) => {
-  return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
-};
+  return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString()
+}
 
 // Decrypt data
 const decryptData = (encryptedData) => {
-  const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
-  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-};
+  const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY)
+  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8))
+}
 
 export default function Page() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [message, setMessage] = useState("");
-    const [token, setToken] = useState("");
-    const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
+  const [message, setMessage] = useState("")
+  const [token, setToken] = useState("")
+  const router = useRouter()
 
-    useEffect(() => {
-        const link = document.createElement("link");
-        link.href = "https://cdn.lineicons.com/4.0/lineicons.css";
-        link.rel = "stylesheet";
-        document.head.appendChild(link);
-        return () => {
-            document.head.removeChild(link);
-        };
-    }, []);
+  useEffect(() => {
+    const link = document.createElement("link")
+    link.href = "https://cdn.lineicons.com/4.0/lineicons.css"
+    link.rel = "stylesheet"
+    document.head.appendChild(link)
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
 
-    useEffect(() => {
-        const container = document.getElementById("container");
-        const registerBtn = document.getElementById("register");
-        const loginBtn = document.getElementById("login");
+  useEffect(() => {
+    const container = document.getElementById("container")
+    const registerBtn = document.getElementById("register")
+    const loginBtn = document.getElementById("login")
 
-        if (registerBtn && loginBtn && container) {
-            registerBtn.addEventListener("click", () => {
-                container.classList.add("right-panel-active");
-            });
+    if (registerBtn && loginBtn && container) {
+      registerBtn.addEventListener("click", () => {
+        container.classList.add("right-panel-active")
+      })
 
-            loginBtn.addEventListener("click", () => {
-                container.classList.remove("right-panel-active");
-            });
-        }
+      loginBtn.addEventListener("click", () => {
+        container.classList.remove("right-panel-active")
+      })
+    }
 
-        return () => {
-            if (registerBtn && loginBtn && container) {
-                registerBtn.removeEventListener("click", () => {
-                    container.classList.add("right-panel-active");
-                });
-                loginBtn.removeEventListener("click", () => {
-                    container.classList.remove("right-panel-active");
-                });
-            }
-        };
-    }, []);
-
-    const handleLogin = async (e) => {
-      e.preventDefault();
-      try {
-          const response = await loginUser({ email, password });
-          console.log("Login Response:", response); // Debugging
-  
-          if (response.access_token) {
-              setToken(response.access_token);
-  
-              // Store the token in sessionStorage
-              sessionStorage.setItem("auth_token", response.access_token);
-  
-              // Store user data in sessionStorage (if available)
-              if (response.user) {
-                  sessionStorage.setItem("user", JSON.stringify(response.user));
-              }
-  
-              // Store the user's role in sessionStorage
-              if (response.roles) {
-                const encryptedRoles = encryptData(response.roles); // Encrypt roles
-                sessionStorage.setItem("roles", encryptedRoles);
-              }
-  
-              // // Store the user's ID in sessionStorage
-              // if (response.user_id) {
-              //   const encryptedId = encryptData(response.user_id)
-              //     sessionStorage.setItem("user_id", encryptedId);
-              //     console.log("User ID stored in sessionStorage:", response.user_id); // Debugging
-              // }
-
-              // Store the user's ID in sessionStorage
-if (response.user_id) {
-  sessionStorage.setItem("user_id", response.user_id);
-  console.log("User ID stored in sessionStorage:", response.user_id); // Debugging
-}
-  
-              toast.success("Login successful! Redirecting...");
-              const encryptedRoles = sessionStorage.getItem("roles");
-              const roles = decryptData(encryptedRoles);
-
-              // Role-based redirection
-              if (roles === "admin") {
-                  setTimeout(() => {
-                    setIsAuthenticated(true);
-                      router.push("/admin_dashboard"); // Redirect admin to /pet_status
-                  }, 2000);
-              } else if (roles === "user") {
-                  setTimeout(() => {
-                    setIsAuthenticated(true);
-                      router.push("/pet_dashboard"); // Redirect user to /pet_dashboard
-                  }, 2000);
-              } else {
-                  // Handle unknown roles
-                  toast.error("Unknown role. Redirecting to login...");
-                  setTimeout(() => {
-                    setIsAuthenticated(false);
-                      router.push("/login"); // Redirect to login for unknown roles
-                  }, 2000);
-              }
-          } else {
-              toast.error(response.detail || "Login failed");
-          }
-      } catch (error) {
-          toast.error(error.message || "An error occurred during login");
+    return () => {
+      if (registerBtn && loginBtn && container) {
+        registerBtn.removeEventListener("click", () => {
+          container.classList.add("right-panel-active")
+        })
+        loginBtn.removeEventListener("click", () => {
+          container.classList.remove("right-panel-active")
+        })
       }
-  };
+    }
+  }, [])
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await registerUser({ email, name, password });
-            if (response.detail) {
-                toast.error(response.detail);
-            } else {
-                toast.success("Registration successful! Check your email for verification.");
-            }
-        } catch (error) {
-            toast.error(error.message || "An error occurred during registration");
-        }
-    };
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await loginUser({ email, password })
+      console.log("Login Response:", response) // Debugging
 
-    const handleForgotPassword = async () => {
-        if (!email) {
-            toast.error("Please enter your email address.");
-            return;
+      if (response.access_token) {
+        setToken(response.access_token)
+
+        // Store the token in sessionStorage
+        sessionStorage.setItem("auth_token", response.access_token)
+
+        // Store user data in sessionStorage (if available)
+        if (response.user) {
+          sessionStorage.setItem("user", JSON.stringify(response.user))
         }
 
-        try {
-            const response = await sendPasswordResetEmail(email);
-            toast.success("Password reset email sent. Please check your inbox.");
-        } catch (error) {
-            toast.error(error.message || "Failed to send password reset email.");
+        // Store the user's role in sessionStorage
+        if (response.roles) {
+          const encryptedRoles = encryptData(response.roles) // Encrypt roles
+          sessionStorage.setItem("roles", encryptedRoles)
         }
-    };
 
-    return (
-        <>
-            <Head>
-                <title>Double Slider Login / Registration Form</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            </Head>
+        // Store the user's ID in sessionStorage
+        if (response.user_id) {
+          sessionStorage.setItem("user_id", response.user_id)
+          console.log("User ID stored in sessionStorage:", response.user_id) // Debugging
+        }
 
-            <style jsx global>{`
+        toast.success("Login successful! Redirecting...")
+        const encryptedRoles = sessionStorage.getItem("roles")
+        const roles = decryptData(encryptedRoles)
+
+        // Role-based redirection
+        if (roles === "admin") {
+          setTimeout(() => {
+            setIsAuthenticated(true)
+            router.push("/admin_dashboard") // Redirect admin to /pet_status
+          }, 2000)
+        } else if (roles === "user") {
+          setTimeout(() => {
+            setIsAuthenticated(true)
+            router.push("/pet_dashboard") // Redirect user to /pet_dashboard
+          }, 2000)
+        } else {
+          // Handle unknown roles
+          toast.error("Unknown role. Redirecting to login...")
+          setTimeout(() => {
+            setIsAuthenticated(false)
+            router.push("/login") // Redirect to login for unknown roles
+          }, 2000)
+        }
+      } else {
+        toast.error(response.detail || "Login failed")
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred during login")
+    }
+  }
+
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await registerUser({ email, name, password })
+      if (response.detail) {
+        toast.error(response.detail)
+      } else {
+        toast.success("Registration successful! Check your email for verification.")
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred during registration")
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("Please enter your email address.")
+      return
+    }
+
+    try {
+      const response = await sendPasswordResetEmail(email)
+      toast.success("Password reset email sent. Please check your inbox.")
+    } catch (error) {
+      toast.error(error.message || "Failed to send password reset email.")
+    }
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Double Slider Login / Registration Form</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
+
+      <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
         * {
@@ -499,59 +493,81 @@ if (response.user_id) {
           }
         }
       `}</style>
-            <div className="container" id="container">
-                <div className="text-[#1A237E] form-container registration-container ">
-                    <form onSubmit={handleRegister}>
-                        <h1>Register Here</h1>
-                        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                        <button type="submit">Register</button>
-                        <span>or use your account</span>
-                        <div className="social-container text-[#1A237E]">
-                            <a href="http://localhost:8000/auth/google" className="social">
-                                <i className="lni lni-google"></i>
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
-                <div className="form-container login-container text-[#1A237E]">
-                    <form onSubmit={handleLogin}>
-                        <h1>Login Here</h1>
-                        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                        <button type="submit">Login</button>
-                        <span>or use your account</span>
-                        <div className="social-container">
-                            <a href="http://localhost:8000/auth/google" className="social">
-                                <i className="lni lni-google"></i>
-                            </a>
-                        </div>
-                        <Suspense fallback={<div>Loading...</div>}>
-                            <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-purple-700">
-                                Forgot Password?
-                            </Link>
-                        </Suspense>
-                    </form>
-                </div>
-
-                <div className="overlay-container">
-                    <div className="overlay">
-                        <div className="overlay-panel overlay-left">
-                            <h1 className="title">Hello <br /> FRIENDS</h1>
-                            <p>If you have an account, login here and have fun</p>
-                            <button className="ghost" id="login">Login</button>
-                        </div>
-                        <div className="overlay-panel overlay-right">
-                            <h1 className="title">Start your <br /> journey now</h1>
-                            <p>If you don't have an account yet, join us and start your journey.</p>
-                            <button className="ghost" id="register">Register</button>
-                        </div>
-                    </div>
-                </div>
+      <div className="container" id="container">
+        <div className="text-[#1A237E] form-container registration-container">
+          <form onSubmit={handleRegister}>
+            <h1>Register Here</h1>
+            <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="submit">Register</button>
+            <span>or use your account</span>
+            <div className="social-container text-[#1A237E]">
+              <a href="http://localhost:8000/auth/google" className="social">
+                <i className="lni lni-google"></i>
+              </a>
             </div>
-            <p>{message}</p>
-        </>
-    );
+          </form>
+        </div>
+
+        <div className="form-container login-container text-[#1A237E]">
+          <form onSubmit={handleLogin}>
+            <h1>Login Here</h1>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="submit">Login</button>
+            <span>or use your account</span>
+            <div className="social-container">
+              <a href="http://localhost:8000/auth/google" className="social">
+                <i className="lni lni-google"></i>
+              </a>
+            </div>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-purple-700">
+                Forgot Password?
+              </Link>
+            </Suspense>
+          </form>
+        </div>
+
+        <div className="overlay-container">
+          <div className="overlay">
+            <div className="overlay-panel overlay-left">
+              <h1 className="title">
+                Hello <br /> FRIENDS
+              </h1>
+              <p>If you have an account, login here and have fun</p>
+              <button className="ghost" id="login">
+                Login
+              </button>
+            </div>
+            <div className="overlay-panel overlay-right">
+              <h1 className="title">
+                Start your <br /> journey now
+              </h1>
+              <p>
+                Don&apos;t have an account? <a href="/register">Sign up</a>
+              </p>
+              <button className="ghost" id="register">
+                Register
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p>{message}</p>
+    </>
+  )
 }
