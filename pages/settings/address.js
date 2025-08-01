@@ -126,7 +126,7 @@ const AddressPage = () => {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="text-black grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label htmlFor="street" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="street" className="block text-sm font-medium text-black">
                           Street Address
                         </label>
                         <input
